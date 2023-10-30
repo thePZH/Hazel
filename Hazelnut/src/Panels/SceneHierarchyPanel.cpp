@@ -44,11 +44,16 @@ namespace Hazel {
 					DrawEntityNode(entity);
 				});
 
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-				m_SelectionContext = {};
+			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) 
+				m_SelectionContext = {};// 则IsWindowhovered()在窗口内的任一item被选中时返回false，因此这里不会在点击Entity时执行！
+			//{
+			//  如果指定下面这个flag，则就算该帧的Item被激活，仍然返回true
+			//	HZ_CORE_INFO("isWindowHovered : {0}", ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem));
+			//	HZ_CORE_INFO("isMouseDown : {0}", ImGui::IsMouseDown(0));
+			//}
 
 			// Right-click on blank space
-			if (ImGui::BeginPopupContextWindow(0, 1, false))
+			if (ImGui::BeginPopupContextWindow(0, 1, false))	// false => 非子菜单
 			{
 				if (ImGui::MenuItem("Create Empty Entity"))
 					m_Context->CreateEntity("Empty Entity");
@@ -80,21 +85,21 @@ namespace Hazel {
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemClicked())	// imgui所有这种函数，其实都是在这一帧记录状态（点击），下一帧才会返回true
 		{
 			m_SelectionContext = entity;
 		}
 
 		bool entityDeleted = false;
-		if (ImGui::BeginPopupContextItem())
+		if (ImGui::BeginPopupContextItem())	// 默认"右键"点到这个entity所对应的TreeNode范围，返回true
 		{
 			if (ImGui::MenuItem("Delete Entity"))
-				entityDeleted = true;
+				entityDeleted = true;	// 延迟删除。防止下面还会用到该Entity，引发报错
 
 			ImGui::EndPopup();
 		}
 
-		if (opened)
+		if (opened)	// 如果打开了这个树节点，绘制该Etity对应TreeNode的子节点，这里暂时画个tag玩
 		{
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 			bool opened = ImGui::TreeNodeEx((void*)9817239, flags, tag.c_str());
@@ -103,7 +108,7 @@ namespace Hazel {
 			ImGui::TreePop();
 		}
 
-		if (entityDeleted)
+		if (entityDeleted)	
 		{
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
@@ -227,14 +232,14 @@ namespace Hazel {
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
 			strncpy_s(buffer, sizeof(buffer), tag.c_str(), sizeof(buffer));
-			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))	// buffer和文本框的内容是同步的;##用于创建这个文本框item的唯一标识
 			{
 				tag = std::string(buffer);
 			}
 		}
 
 		ImGui::SameLine();
-		ImGui::PushItemWidth(-1);
+		ImGui::PushItemWidth(-1);	// 接下来的ui元素宽度设置为这行可用的最大宽度
 
 		if (ImGui::Button("Add Component"))
 			ImGui::OpenPopup("AddComponent");

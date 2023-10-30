@@ -82,7 +82,7 @@ namespace Hazel {
 		Ref<VertexBuffer> TextVertexBuffer;
 		Ref<Shader> TextShader;
 
-		uint32_t QuadIndexCount = 0;
+		uint32_t QuadIndexCount = 0;	// 当前index数量
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
@@ -124,9 +124,9 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
-
+		// 申请一块连续的大内存
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
-		s_Data.QuadVertexBuffer->SetLayout({
+		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float2, "a_TexCoord"     },
@@ -285,6 +285,7 @@ namespace Hazel {
 		s_Data.TextureSlotIndex = 1;
 	}
 
+	// 把vertexbuffer清空，准备记录下一个draw call需要的顶点
 	void Renderer2D::Flush()
 	{
 		if (s_Data.QuadIndexCount)
@@ -384,6 +385,7 @@ namespace Hazel {
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
 			NextBatch();
 
+		// 给VertexBuffer中push 4个顶点
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];

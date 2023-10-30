@@ -27,7 +27,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
-
+	// 如果是顶点，就对应顶点的属性
 	struct BufferElement
 	{
 		std::string Name;
@@ -42,7 +42,6 @@ namespace Hazel {
 			: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
 		{
 		}
-
 		uint32_t GetComponentCount() const
 		{
 			switch (Type)
@@ -65,6 +64,7 @@ namespace Hazel {
 		}
 	};
 
+	// 顶点有多少个属性，每个属性的名字、数据类型、尺寸、偏移量
 	class BufferLayout
 	{
 	public:
@@ -79,6 +79,7 @@ namespace Hazel {
 		uint32_t GetStride() const { return m_Stride; }
 		const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
+		// 允许在类的实例上使用迭代器，遍历 m_Elements 这个私有成员变量中的元素
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
 		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }

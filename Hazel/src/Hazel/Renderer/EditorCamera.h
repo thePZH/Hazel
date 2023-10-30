@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 
 namespace Hazel {
-
+	// 所有相机只需要维护自己的view矩阵
 	class EditorCamera : public Camera
 	{
 	public:
@@ -58,8 +58,8 @@ namespace Hazel {
 
 		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
-		float m_Distance = 10.0f;
-		float m_Pitch = 0.0f, m_Yaw = 0.0f;
+		float m_Distance = 10.0f;			// 焦距
+		float m_Pitch = 0.0f, m_Yaw = 0.0f;	// 摄像机没有roll
 
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 	};

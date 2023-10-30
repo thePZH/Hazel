@@ -13,7 +13,7 @@
 #include <yaml-cpp/yaml.h>
 
 namespace YAML {
-
+	// 结构体模板特例化，yaml库里有convert结构体模板，这里明确指定了模板参数为glm:vec2的模板结构体
 	template<>
 	struct convert<glm::vec2>
 	{

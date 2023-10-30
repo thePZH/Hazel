@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 
 namespace Hazel {
-
+	// 自定义的shader数据类型 映射为 opengl基本类型
 	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 	{
 		switch (type)
@@ -53,7 +53,7 @@ namespace Hazel {
 
 		glBindVertexArray(0);
 	}
-
+	// push到内部Vector<ref>中，并对新传入的vertexbuffer顶点的每个属性指定glVertexAttribPointer()
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
 		HZ_PROFILE_FUNCTION();
@@ -64,7 +64,7 @@ namespace Hazel {
 		vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
-		for (const auto& element : layout)
+		for (const auto& element : layout)	// 可以范围循环访问layout内部的vector成员，因为该类实现了迭代器begin() end()方法
 		{
 			switch (element.Type)
 			{

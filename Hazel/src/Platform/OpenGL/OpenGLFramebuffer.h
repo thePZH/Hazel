@@ -25,9 +25,9 @@ namespace Hazel {
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 	private:
 		uint32_t m_RendererID = 0;
-		FramebufferSpecification m_Specification;
+		FramebufferSpecification m_Specification;	// 帧缓存的尺寸、附件数、格式等
 
-		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
+		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;	// 所有附件的描述
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
 
 		std::vector<uint32_t> m_ColorAttachments;

@@ -18,7 +18,7 @@ namespace Hazel {
 		// Defaults
 		Depth = DEPTH24STENCIL8
 	};
-
+	// 单个附件纹理的描述
 	struct FramebufferTextureSpecification
 	{
 		FramebufferTextureSpecification() = default;
@@ -29,6 +29,7 @@ namespace Hazel {
 		// TODO: filtering/wrap
 	};
 
+	// 维护Framebuffer所有attachment的描述
 	struct FramebufferAttachmentSpecification
 	{
 		FramebufferAttachmentSpecification() = default;
@@ -37,7 +38,7 @@ namespace Hazel {
 
 		std::vector<FramebufferTextureSpecification> Attachments;
 	};
-
+	
 	struct FramebufferSpecification
 	{
 		uint32_t Width = 0, Height = 0;

@@ -115,25 +115,27 @@ namespace Hazel {
 				m_SelectionContext = {};
 		}
 	}
-
+	
+	// UE4风格
 	static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
+		auto boldFont = io.Fonts->Fonts[0];	// imgui layer attach时加载的字体，粗体
 
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.c_str());	// 所有这个Vec3的分量item都共用这一个ID，因为他们都关联到同一个vec3，只是部分不同而已
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, columnWidth);
-		ImGui::Text(label.c_str());
+		ImGui::Text(label.c_str());	// 列1
 		ImGui::NextColumn();
-
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		// 列2
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth()); // 计算剩余可用空间的总宽度，均分成3份
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
+		// 分量1
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
@@ -144,10 +146,11 @@ namespace Hazel {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");	// 如果不用##号，则label会显示在DragFloat item的后方， min = max = 0 表示任何浮点数都可以
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
-
+		
+		// 分量2
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
@@ -162,6 +165,7 @@ namespace Hazel {
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
+		// 分量3
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
@@ -176,34 +180,32 @@ namespace Hazel {
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
-
-		ImGui::Columns(1);
-
+		ImGui::Columns(1);	// 恢复1列的布局
 		ImGui::PopID();
 	}
 	
 	template<typename T, typename UIFunction>
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
-	{
+	{	
+		// 默认打开 | 给个边框 | 扩展hitbox到最后边 | 允许item重叠另一个item | 边框有默认内边距
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 		if (entity.HasComponent<T>())
 		{
 			auto& component = entity.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();		// 窗口内已有元素的下边框到窗口下边框的矩形区域
 
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });	// 4像素的item框内边距
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImGui::Separator();
+			ImGui::Separator();	// 水平分割线
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
-			ImGui::PopStyleVar(
-			);
-			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+			ImGui::PopStyleVar();
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);		// 下一个UI元素放在同一行的指定偏移量的位置上
 			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
 			{
-				ImGui::OpenPopup("ComponentSettings");
+				ImGui::OpenPopup("ComponentSettings");	// ID
 			}
 
-			bool removeComponent = false;
+			bool removeComponent = false;	// 用于延迟delete，不能在这里就删除这个组件，因为下面的代码还没执行完，可能还需要引用它
 			if (ImGui::BeginPopup("ComponentSettings"))
 			{
 				if (ImGui::MenuItem("Remove component"))
@@ -212,7 +214,7 @@ namespace Hazel {
 				ImGui::EndPopup();
 			}
 
-			if (open)
+			if (open)	// 当这个组件TreeNode被展开时，绘制其具体内容，这部分是每个组件不同的，因此用回调函数实现
 			{
 				uiFunction(component);
 				ImGui::TreePop();
@@ -225,6 +227,7 @@ namespace Hazel {
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
+		// ---Tag
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -238,6 +241,7 @@ namespace Hazel {
 			}
 		}
 
+		// ---Add Component button
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);	// 接下来的ui元素宽度设置为这行可用的最大宽度
 
@@ -260,6 +264,7 @@ namespace Hazel {
 
 		ImGui::PopItemWidth();
 
+		// ---the other Components
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
 			DrawVec3Control("Translation", component.Translation);
@@ -410,8 +415,8 @@ namespace Hazel {
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			
-			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-			if (ImGui::BeginDragDropTarget())
+			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));		// 这个button 高度设置为0，IMGUI会自动根据文本或内容计算合适的高度
+			if (ImGui::BeginDragDropTarget())	// 按钮区域可以拖放元素
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
@@ -491,11 +496,12 @@ namespace Hazel {
 
 	}
 	
+	// 当前选中entity没有T组件才会把添加这个组件的菜单选项添加到该菜单中
 	template<typename T>
 	void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName) {
-		if (!m_SelectionContext.HasComponent<T>())
+		if (!m_SelectionContext.HasComponent<T>())	
 		{
-			if (ImGui::MenuItem(entryName.c_str()))
+			if (ImGui::MenuItem(entryName.c_str()))	// 形参只是个label
 			{
 				m_SelectionContext.AddComponent<T>();
 				ImGui::CloseCurrentPopup();

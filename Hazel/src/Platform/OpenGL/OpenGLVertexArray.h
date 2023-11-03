@@ -3,7 +3,7 @@
 #include "Hazel/Renderer/VertexArray.h"
 
 namespace Hazel {
-
+	// 它维护n个vertexbuffer和1个indexbuffer的引用，并不是维护他们的原生内存
 	class OpenGLVertexArray : public VertexArray
 	{
 	public:

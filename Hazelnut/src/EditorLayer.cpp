@@ -152,29 +152,30 @@ namespace Hazel {
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)
+		if (opt_fullscreen)	// DockSpace设置为全屏模式。
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->Pos);
 			ImGui::SetNextWindowSize(viewport->Size);
 			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);	// docksapce也是个窗口，这里要把他的圆角和边框都设为0
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);	
+			// 消除标题栏、不可折叠、不可调整大小和不可移动的功能。
 			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
-
+		
 		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;
+			window_flags |= ImGuiWindowFlags_NoBackground;	// 果包括，那么设置窗口标志，不绘制背景。
 
 		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
 		// all active windows docked into it will lose their parent and become undocked.
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));	// 窗口边框内边距为0确保等会的dockspace占据整个可用区域
+		ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);			// 创建用于承载dockspace的UI窗口
 		ImGui::PopStyleVar();
 
 		if (opt_fullscreen)
@@ -183,12 +184,13 @@ namespace Hazel {
 		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
-		float minWinSizeX = style.WindowMinSize.x;
+		float minWinSizeX = style.WindowMinSize.x;	// 暂存一下，稍后还原
 		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			// 创建DockSpace
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags); 
 		}
 
 		style.WindowMinSize.x = minWinSizeX;
@@ -322,11 +324,12 @@ namespace Hazel {
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
+			// 关键函数，获取entity的M矩阵可以帮助gizmo把自己定位到该entity的位置上，而V确定投到哪个相机，P决定透视还是正交
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 				nullptr, snap ? snapValues : nullptr);
 
-			if (ImGuizmo::IsUsing())
+			if (ImGuizmo::IsUsing())	// 一旦操作了gizmo，就把事实更改后的值赋值给组件的transform变量
 			{
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
@@ -690,7 +693,7 @@ namespace Hazel {
 		if (!m_EditorScenePath.empty())
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
 		else
-			SaveSceneAs();
+			SaveSceneAs();	// 没有关联的路径文件就让用户选择一个
 	}
 
 	void EditorLayer::SaveSceneAs()

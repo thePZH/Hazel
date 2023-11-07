@@ -24,14 +24,14 @@ namespace Hazel {
 
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 	private:
-		uint32_t m_RendererID = 0;
-		FramebufferSpecification m_Specification;
+		uint32_t m_RendererID = 0;																			// framebuffer ID
+		FramebufferSpecification m_Specification;															// 尺寸,附件的描述，采样点数
 
-		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
-		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
+		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;						// 所有颜色附件描述
+		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;	// 深度附件描述，只有1个
 
-		std::vector<uint32_t> m_ColorAttachments;
-		uint32_t m_DepthAttachment = 0;
+		std::vector<uint32_t> m_ColorAttachments;															// 所有颜色附件的ID
+		uint32_t m_DepthAttachment = 0;																		// 深度附件ID
 	};
 
 }

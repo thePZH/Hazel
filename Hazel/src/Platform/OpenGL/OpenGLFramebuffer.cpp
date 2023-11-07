@@ -24,6 +24,7 @@ namespace Hazel {
 			glBindTexture(TextureTarget(multisampled), id);
 		}
 
+		// 先指定纹理格式、filter、wrap格式，然后把颜色纹理附件附加到framebuffer上
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)
 		{
 			bool multisampled = samples > 1;
@@ -44,7 +45,7 @@ namespace Hazel {
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
 		}
-
+		
 		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
 		{
 			bool multisampled = samples > 1;
@@ -88,11 +89,12 @@ namespace Hazel {
 			return 0;
 		}
 
-	}
+	}	// Utils
 
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
+		// 先把附件描述数组里的颜色附件和深度附件分开
 		for (auto spec : m_Specification.Attachments.Attachments)
 		{
 			if (!Utils::IsDepthFormat(spec.TextureFormat))
@@ -110,7 +112,7 @@ namespace Hazel {
 		glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
 		glDeleteTextures(1, &m_DepthAttachment);
 	}
-
+	// 重新创建framebuffer
 	void OpenGLFramebuffer::Invalidate()
 	{
 		if (m_RendererID)
@@ -128,7 +130,7 @@ namespace Hazel {
 
 		bool multisample = m_Specification.Samples > 1;
 
-		// Attachments
+		// color attachments
 		if (m_ColorAttachmentSpecifications.size())
 		{
 			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
@@ -149,6 +151,7 @@ namespace Hazel {
 			}
 		}
 
+		// depth attachment (only one)
 		if (m_DepthAttachmentSpecification.TextureFormat != FramebufferTextureFormat::None)
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
@@ -161,16 +164,17 @@ namespace Hazel {
 			}
 		}
 
+		// 启用MRT
 		if (m_ColorAttachments.size() > 1)
 		{
 			HZ_CORE_ASSERT(m_ColorAttachments.size() <= 4);
-			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_ColorAttachments.size(), buffers);
+			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 }; // 对应于OpenGL中的不同颜色附件位置。
+			glDrawBuffers(m_ColorAttachments.size(), buffers);	// 启用多输出目标，告诉opengl输出目标有4个，PS中的输出目标与这里的0~3对应
 		}
 		else if (m_ColorAttachments.empty())
 		{
 			// Only depth-pass
-			glDrawBuffer(GL_NONE);
+			glDrawBuffer(GL_NONE);	// 禁止绘制操作，即不准写入东西到颜色附件中，只进行深度测试
 		}
 
 		HZ_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");

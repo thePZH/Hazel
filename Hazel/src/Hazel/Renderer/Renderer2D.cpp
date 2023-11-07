@@ -285,7 +285,7 @@ namespace Hazel {
 		s_Data.TextureSlotIndex = 1;
 	}
 
-	// 把vertexbuffer清空，准备记录下一个draw call需要的顶点
+	// 发出drawcall
 	void Renderer2D::Flush()
 	{
 		if (s_Data.QuadIndexCount)
@@ -337,6 +337,7 @@ namespace Hazel {
 		}
 	}
 
+	// 绘制当前顶点缓存中的顶点，然后清空并开始准备记录下一批顶点
 	void Renderer2D::NextBatch()
 	{
 		Flush();

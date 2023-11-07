@@ -130,6 +130,7 @@ namespace Hazel {
 
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
+			// mouse picking, 仅当鼠标悬浮在视口 且 没有在Guizmo上 且 没有按下Alt键的时候，才会设置当前悬浮的Entity为场景层级面板的当前选择Entity
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
@@ -167,7 +168,7 @@ namespace Hazel {
 		
 		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;	// 果包括，那么设置窗口标志，不绘制背景。
+			window_flags |= ImGuiWindowFlags_NoBackground;	// 如果包括，那么设置窗口标志，不绘制背景。
 
 		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 

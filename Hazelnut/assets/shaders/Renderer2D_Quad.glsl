@@ -9,8 +9,8 @@ layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in float a_TilingFactor;
 layout(location = 5) in int a_EntityID;
-
-layout(std140, binding = 0) uniform Camera
+// 默认set = 0，表示从set0的0号绑定点读取数据
+layout(std140, binding = 0) uniform Camera	// 这种写法是为了兼容Vulkan
 {
 	mat4 u_ViewProjection;
 };
@@ -22,7 +22,7 @@ struct VertexOutput
 	float TilingFactor;
 };
 
-layout (location = 0) out VertexOutput Output;
+layout (location = 0) out VertexOutput Output;	// 这个结构体占用3个location，每个分量占用一个
 layout (location = 3) out flat float v_TexIndex;
 layout (location = 4) out flat int v_EntityID;
 

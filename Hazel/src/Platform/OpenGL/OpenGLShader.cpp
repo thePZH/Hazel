@@ -48,13 +48,15 @@ namespace Hazel {
 			return nullptr;
 		}
 
-		static const char* GetCacheDirectory()
+		// 着色器二进制缓存文件地址
+		static const char* GetCacheDirectory()	
 		{
 			// TODO: make sure the assets directory is valid
 			return "assets/cache/shader/opengl";
 		}
 
-		static void CreateCacheDirectoryIfNeeded()
+
+		static void CreateCacheDirectoryIfNeeded()	
 		{
 			std::string cacheDirectory = GetCacheDirectory();
 			if (!std::filesystem::exists(cacheDirectory))
@@ -94,7 +96,7 @@ namespace Hazel {
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
+		auto shaderSources = PreProcess(source);	// 把shader文本分成vs fs两部分 map存放
 
 		{
 			Timer timer;

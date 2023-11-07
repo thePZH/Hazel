@@ -24,7 +24,7 @@ namespace Hazel {
 		static void EndScene();
 		static void Flush();
 
-		// Primitives
+		// Primitives	每次调用draw方法，都会生成顶点push到顶点缓存中（batch），统一在endScene()方法里调用flush()执行一次drawcall
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));

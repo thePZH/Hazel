@@ -21,13 +21,13 @@ namespace Hazel {
 		void Begin();
 		void End();
 
-		void BlockEvents(bool block) { m_BlockEvents = block; }
+		void BlockEvents(bool block) { m_BlockEvents = block; }	// 
 		
 		void SetDarkThemeColors();
 
 		uint32_t GetActiveWidgetID() const;
 	private:
-		bool m_BlockEvents = true;
+		bool m_BlockEvents = true;	// 阻塞事件传递，使其不再传给应用层，ImGuiLayer是UI层和应用层之间的屏障
 	};
 
 }

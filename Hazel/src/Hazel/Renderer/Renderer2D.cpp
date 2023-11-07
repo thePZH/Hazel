@@ -124,7 +124,7 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
-		// 申请一块连续的大内存
+		// 申请一块连续的大内存专门用于存放绘制Quad的顶点
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局
 			{ ShaderDataType::Float3, "a_Position"     },
@@ -285,7 +285,7 @@ namespace Hazel {
 		s_Data.TextureSlotIndex = 1;
 	}
 
-	// 把vertexbuffer清空，准备记录下一个draw call需要的顶点
+	// 发出drawcall
 	void Renderer2D::Flush()
 	{
 		if (s_Data.QuadIndexCount)
@@ -337,6 +337,7 @@ namespace Hazel {
 		}
 	}
 
+	// 绘制当前顶点缓存中的顶点，然后清空并开始准备记录下一批顶点
 	void Renderer2D::NextBatch()
 	{
 		Flush();

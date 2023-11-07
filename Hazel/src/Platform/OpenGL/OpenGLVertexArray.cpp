@@ -66,7 +66,7 @@ namespace Hazel {
 		const auto& layout = vertexBuffer->GetLayout();
 		for (const auto& element : layout)	// 可以范围循环访问layout内部的vector成员，因为该类实现了迭代器begin() end()方法
 		{
-			switch (element.Type)
+			switch (element.Type)	// 对我们的batch中的每个顶点的每个属性（即这里的element）进行属性设置
 			{
 				case ShaderDataType::Float:
 				case ShaderDataType::Float2:
@@ -74,11 +74,11 @@ namespace Hazel {
 				case ShaderDataType::Float4:
 				{
 					glEnableVertexAttribArray(m_VertexBufferIndex);
-					glVertexAttribPointer(m_VertexBufferIndex,
-						element.GetComponentCount(),
-						ShaderDataTypeToOpenGLBaseType(element.Type),
-						element.Normalized ? GL_TRUE : GL_FALSE,
-						layout.GetStride(),
+					glVertexAttribPointer(m_VertexBufferIndex,			// slot
+						element.GetComponentCount(),					// 分量个数
+						ShaderDataTypeToOpenGLBaseType(element.Type),	// 分量内部格式
+						element.Normalized ? GL_TRUE : GL_FALSE,		
+						layout.GetStride(),								// 等于顶点结构体大小，即本属性距离下个顶点的同个属性的距离
 						(const void*)element.Offset);
 					m_VertexBufferIndex++;
 					break;

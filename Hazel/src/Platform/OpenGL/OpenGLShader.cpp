@@ -191,13 +191,16 @@ namespace Hazel {
 		return shaderSources;
 	}
 
+	// 传入shader源代码，根据是否有缓存文件选择复用 or 编译
 	void OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
 		GLuint program = glCreateProgram();
 
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
+		shaderc::Compiler compiler;			// shaderc 是vulkan SDK里的库
+		shaderc::CompileOptions options;	// 在调用Compiler::compileGlslToSpv()时传入
+		// options.AddMacroDefinition("OPENGL", "USE_GRADIANT_MAP") // 可以添加宏定义，以便在shader中用条件编译
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		
 		const bool optimize = true;
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -206,14 +209,15 @@ namespace Hazel {
 
 		auto& shaderData = m_VulkanSPIRV;
 		shaderData.clear();
-		for (auto&& [stage, source] : shaderSources)
+		for (auto&& [stage, source] : shaderSources)	// auto&& 通用引用
 		{
 			std::filesystem::path shaderFilePath = m_FilePath;
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
 			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-			if (in.is_open())
+			if (in.is_open())	// 有缓存文件，则复用之前的缓存，读到m_VulkanSPIRV中
 			{
+				// 确定文件大小
 				in.seekg(0, std::ios::end);
 				auto size = in.tellg();
 				in.seekg(0, std::ios::beg);
@@ -222,7 +226,7 @@ namespace Hazel {
 				data.resize(size / sizeof(uint32_t));
 				in.read((char*)data.data(), size);
 			}
-			else
+			else    // 没有缓存，则编译shader
 			{
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -230,9 +234,10 @@ namespace Hazel {
 					HZ_CORE_ERROR(module.GetErrorMessage());
 					HZ_CORE_ASSERT(false);
 				}
-
+				// 编译后的二进制代码写进m_VulkanSPIRV
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
+				// 写入缓存路径中
 				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
 				if (out.is_open())
 				{
@@ -243,7 +248,7 @@ namespace Hazel {
 				}
 			}
 		}
-
+		// 反射，获取有关着色器资源的信息，如 uniform 缓冲区的大小、绑定点等
 		for (auto&& [stage, data]: shaderData)
 			Reflect(stage, data);
 	}
@@ -252,7 +257,7 @@ namespace Hazel {
 	{
 		auto& shaderData = m_OpenGLSPIRV;
 
-		shaderc::Compiler compiler;
+		shaderc::Compiler compiler;	
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 		const bool optimize = false;
@@ -281,10 +286,11 @@ namespace Hazel {
 			}
 			else
 			{
-				spirv_cross::CompilerGLSL glslCompiler(spirv);
-				m_OpenGLSourceCode[stage] = glslCompiler.compile();
+				spirv_cross::CompilerGLSL glslCompiler(spirv);		// 交叉编译器，用于把vulkan-spirv反编译为GLSL源码
+				m_OpenGLSourceCode[stage] = glslCompiler.compile();	// 将 Vulkan SPIR-V(字节码，中间状态）转换为 OpenGL GLSL 源码
 				auto& source = m_OpenGLSourceCode[stage];
 
+				// 把GLSL源码编译为 opengl-spirv 中间代码
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
@@ -292,8 +298,10 @@ namespace Hazel {
 					HZ_CORE_ASSERT(false);
 				}
 
+				// 保存到 opengl-spirv 中
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
+				// 输出到缓存路径下，作为缓存二进制文件
 				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
 				if (out.is_open())
 				{
@@ -313,10 +321,11 @@ namespace Hazel {
 		std::vector<GLuint> shaderIDs;
 		for (auto&& [stage, spirv] : m_OpenGLSPIRV)
 		{
+			// 创建shader对象，并加载opengl-spirv字节码
 			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
 			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
-			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-			glAttachShader(program, shaderID);
+			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);	// 指定入口函数为main
+			glAttachShader(program, shaderID);							// 将shader对象附加到program
 		}
 
 		glLinkProgram(program);
@@ -332,7 +341,7 @@ namespace Hazel {
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 			HZ_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_FilePath, infoLog.data());
 
-			glDeleteProgram(program);
+			glDeleteProgram(program);	// 不用detach，删除程序对象会自动解除与其关联的着色器对象
 
 			for (auto id : shaderIDs)
 				glDeleteShader(id);
@@ -340,18 +349,21 @@ namespace Hazel {
 
 		for (auto id : shaderIDs)
 		{
-			glDetachShader(program, id);
+			glDetachShader(program, id);	// 分离再删除
 			glDeleteShader(id);
 		}
 
 		m_RendererID = program;
 	}
 
+	// 这个反射仅仅是输出一些信息到控制台
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
 	{
+		// 创建SPIR-V交叉编译器，获取着色器资源信息（包括uniform buffer和采样图像等）
 		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
+		// 输出反射信息
 		HZ_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
 		HZ_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
 		HZ_CORE_TRACE("    {0} resources", resources.sampled_images.size());
@@ -359,6 +371,7 @@ namespace Hazel {
 		HZ_CORE_TRACE("Uniform buffers:");
 		for (const auto& resource : resources.uniform_buffers)
 		{
+			// 获取Uniform Buffer的类型信息
 			const auto& bufferType = compiler.get_type(resource.base_type_id);
 			uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);

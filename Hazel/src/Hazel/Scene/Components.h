@@ -55,8 +55,8 @@ namespace Hazel {
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture;
-		float TilingFactor = 1.0f;
+		Ref<Texture2D> Texture;			
+		float TilingFactor = 1.0f;					// 纹理平铺密度
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;

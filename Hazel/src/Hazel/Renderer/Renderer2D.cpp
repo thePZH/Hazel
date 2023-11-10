@@ -100,8 +100,8 @@ namespace Hazel {
 
 		float LineWidth = 2.0f;
 
-		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1; // 0 = white texture
+		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;	// 纹理槽，batch中最多支持的纹理个数为32
+		uint32_t TextureSlotIndex = 1; // 0 = white texture			
 		
 		Ref<Texture2D> FontAtlasTexture;
 
@@ -124,7 +124,7 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
-		// 申请一块连续的大内存
+		// 申请一块连续的大内存专门用于存放绘制Quad的顶点
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局
 			{ ShaderDataType::Float3, "a_Position"     },
@@ -379,7 +379,7 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 
 		constexpr size_t quadVertexCount = 4;
-		const float textureIndex = 0.0f; // White Texture
+		const float textureIndex = 0.0f; // White Texture，这个函数并不提供纹理，所以默认用白色纹理，index=0
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 		const float tilingFactor = 1.0f;
 
@@ -416,15 +416,16 @@ namespace Hazel {
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i] == *texture)
+			if (*s_Data.TextureSlots[i] == *texture)		
 			{
 				textureIndex = (float)i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0.0f)		
 		{
+			// 不同纹理个数超过限制，则开始新的batch
 			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
 				NextBatch();
 

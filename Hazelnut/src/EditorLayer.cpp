@@ -120,11 +120,11 @@ namespace Hazel {
 			}
 		}
 
-		auto[mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
+		auto[mx, my] = ImGui::GetMousePos();								// 屏幕空间
+		mx -= m_ViewportBounds[0].x;										// 屏幕空间转窗口局部空间
 		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		my = viewportSize.y - my;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];	
+		my = viewportSize.y - my;											// 这里翻转y轴，变为左下角为原点（符合opengl风格，方便纹理映射）
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 
@@ -262,25 +262,31 @@ namespace Hazel {
 
 		ImGui::End();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });	// 窗口内边距0
 		ImGui::Begin("Viewport");
-		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();		// 窗口内容区域的最小坐标（局部坐标，因此是(0,0))
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		auto viewportOffset = ImGui::GetWindowPos();
+		auto viewportOffset = ImGui::GetWindowPos();						// 窗口左上角在屏幕空间中的位置
+		
+		// 窗口边框在屏幕空间的坐标 (左上角(0,0))
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
+		// HZ_CORE_INFO("{0}, {1}", viewportMaxRegion.x, viewportMaxRegion.y);
+		// HZ_CORE_INFO("{0}, {1}", viewportOffset.x, viewportOffset.y);
+		// HZ_CORE_INFO("{0}, {1}", m_ViewportBounds[0], m_ViewportBounds[1]);
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
+		// 如果没有悬浮在viewport窗口上，则我们不想控制渲染层，需要在UI层就阻塞事件的继续传递
 		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered);
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
 		uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		// 后两个参数是指定viewport的左上/右下的UV坐标的
 		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
+		// 让viewport成为拖放目标点，这里允许接收类型为CONTENT_BROWSER_ITEM的payload
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))

@@ -64,7 +64,7 @@ namespace Hazel {
 		}
 	};
 
-	// 顶点有多少个属性，每个属性的名字、数据类型、尺寸、偏移量
+	// 针对每个顶点而言的。有多少个属性，其名字、数据类型、尺寸、偏移量
 	class BufferLayout
 	{
 	public:
@@ -91,9 +91,9 @@ namespace Hazel {
 			m_Stride = 0;
 			for (auto& element : m_Elements)
 			{
-				element.Offset = offset;
-				offset += element.Size;
-				m_Stride += element.Size;
+				element.Offset = offset;	// 顶点数组的0位置，到该属性的起始位置的偏移量
+				offset += element.Size;		
+				m_Stride += element.Size;	// 步长为所有属性的size之和
 			}
 		}
 	private:

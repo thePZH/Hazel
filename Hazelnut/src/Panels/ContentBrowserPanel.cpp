@@ -27,36 +27,38 @@ namespace Hazel {
 		}
 
 		static float padding = 16.0f;
-		static float thumbnailSize = 128.0f;
+		static float thumbnailSize = 128.0f;				// 缩略图尺寸
 		float cellSize = thumbnailSize + padding;
 
 		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)(panelWidth / cellSize);
+		int columnCount = (int)(panelWidth / cellSize);	
 		if (columnCount < 1)
 			columnCount = 1;
 
 		ImGui::Columns(columnCount, 0, false);
 
+		// 遍历每个目录条目，为其显示对应缩略图
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& path = directoryEntry.path();
 			std::string filenameString = path.filename().string();
 			
-			ImGui::PushID(filenameString.c_str());
+			ImGui::PushID(filenameString.c_str()); // 确保每个ImageButton不同(类似命名空间), 或者直接使用ImageButtonEx()，然后传入ImguiID作为标识
 			Ref<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
+			// 设为拖拽源，并设置有效负载为本目录条目的路径。在其他任何Imgui item上设置一个拖放目标，即可接收并处理，但必须保证接收的类型与此处匹配，即"CONTENT_BROWSER_ITEM"
 			if (ImGui::BeginDragDropSource())
 			{
-				std::filesystem::path relativePath(path);
+				std::filesystem::path relativePath(path);	// 命名相对路径，但是是绝对路径- -
 				const wchar_t* itemPath = relativePath.c_str();
-				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));	// +1 把\0纳入
 				ImGui::EndDragDropSource();
 			}
 
 			ImGui::PopStyleColor();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))	
 			{
 				if (directoryEntry.is_directory())
 					m_CurrentDirectory /= path.filename();

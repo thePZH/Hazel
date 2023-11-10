@@ -192,7 +192,7 @@ namespace Hazel {
 		if (entity.HasComponent<T>())
 		{
 			auto& component = entity.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();		// 窗口内已有元素的下边框到窗口下边框的矩形区域
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();		
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });	// 4像素的item框内边距
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -416,13 +416,13 @@ namespace Hazel {
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			
 			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));		// 这个button 高度设置为0，IMGUI会自动根据文本或内容计算合适的高度
-			if (ImGui::BeginDragDropTarget())	// 按钮区域可以拖放元素
+			if (ImGui::BeginDragDropTarget())					// 按钮区域设置为拖放目标，可接收payload
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
 					std::filesystem::path texturePath(path);
-					Ref<Texture2D> texture = Texture2D::Create(texturePath.string());
+					Ref<Texture2D> texture = Texture2D::Create(texturePath.string());	// string()转成窄字符串
 					if (texture->IsLoaded())
 						component.Texture = texture;
 					else

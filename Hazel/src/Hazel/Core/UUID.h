@@ -16,6 +16,7 @@ namespace Hazel {
 
 }
 
+// 特例化hash函数（结构体），以便获得更好的性能
 namespace std {
 	template <typename T> struct hash;
 

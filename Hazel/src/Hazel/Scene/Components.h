@@ -118,7 +118,7 @@ namespace Hazel {
 		BodyType Type = BodyType::Static;
 		bool FixedRotation = false;
 
-		// Storage for runtime
+		// Storage for runtime	刚体对象的引用
 		void* RuntimeBody = nullptr;
 
 		Rigidbody2DComponent() = default;
@@ -133,7 +133,7 @@ namespace Hazel {
 		// TODO(Yan): move into physics material in the future maybe
 		float Density = 1.0f;
 		float Friction = 0.5f;
-		float Restitution = 0.0f;
+		float Restitution = 0.0f;			// 弹力
 		float RestitutionThreshold = 0.5f;
 
 		// Storage for runtime

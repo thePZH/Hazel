@@ -725,8 +725,9 @@ namespace Hazel {
 			OnSceneStop();
 
 		m_SceneState = SceneState::Play;
-
-		m_ActiveScene = Scene::Copy(m_EditorScene);
+		
+		// 点击play，将会复制一个scene作为上下文来工作
+		m_ActiveScene = Scene::Copy(m_EditorScene);		
 		m_ActiveScene->OnRuntimeStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -756,7 +757,7 @@ namespace Hazel {
 
 		m_SceneState = SceneState::Edit;
 
-		m_ActiveScene = m_EditorScene;
+		m_ActiveScene = m_EditorScene;	// 修改指向后，原本的因为点击Play而复制出来的scene引用计数减为0，被删除
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}

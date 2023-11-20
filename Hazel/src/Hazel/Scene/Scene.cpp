@@ -39,7 +39,7 @@ namespace Hazel {
 			for (auto srcEntity : view)
 			{
 				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
-
+				 
 				auto& srcComponent = src.get<Component>(srcEntity);
 				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
 			}
@@ -87,9 +87,9 @@ namespace Hazel {
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			Entity newEntity = newScene->CreateEntityWithUUID(uuid, name);
 			enttMap[uuid] = (entt::entity)newEntity;
-		}
+		} 
 
-		// Copy components (except IDComponent and TagComponent)
+		// Copy components (except IDComponent and TagComponent,创建entity时就已经创建了)
 		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
@@ -188,11 +188,11 @@ namespace Hazel {
 
 			// Physics
 			{
-				const int32_t velocityIterations = 6;
+				const int32_t velocityIterations = 6;	// 迭代频率相关设置
 				const int32_t positionIterations = 2;
-				m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+				m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);	// 执行物理模拟的计算
 
-				// Retrieve transform from Box2D
+				// 从物理world中获取计算结果（位置，方向），将其作用回相应的entity的transform组件
 				auto view = m_Registry.view<Rigidbody2DComponent>();
 				for (auto e : view)
 				{
@@ -388,18 +388,18 @@ namespace Hazel {
 			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
 			bodyDef.angle = transform.Rotation.z;
 
-			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);	// 创建Box2D刚体对象
 			body->SetFixedRotation(rb2d.FixedRotation);
 			rb2d.RuntimeBody = body;
 
-			if (entity.HasComponent<BoxCollider2DComponent>())
+			if (entity.HasComponent<BoxCollider2DComponent>())		// 如果还有2D方块碰撞体组件
 			{
 				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
 
-				b2PolygonShape boxShape;
+				b2PolygonShape boxShape;	// 创建一个多边形形状对象，并设置为方块
 				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
 
-				b2FixtureDef fixtureDef;
+				b2FixtureDef fixtureDef;	// 夹具，就是定义属性的
 				fixtureDef.shape = &boxShape;
 				fixtureDef.density = bc2d.Density;
 				fixtureDef.friction = bc2d.Friction;

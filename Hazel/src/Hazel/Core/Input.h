@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 namespace Hazel {
-
+	// 输入轮询系统比事件系统的响应速度更快
 	class Input
 	{
 	public:

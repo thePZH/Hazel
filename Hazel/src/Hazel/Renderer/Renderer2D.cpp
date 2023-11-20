@@ -158,11 +158,11 @@ namespace Hazel {
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		// Circles
+		// Circles 不同于quad需要4个顶点结构体组成一个quad，这里一个顶点结构体就代表一个圆
 		s_Data.CircleVertexArray = VertexArray::Create();
 
 		s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex));
-		s_Data.CircleVertexBuffer->SetLayout({
+		s_Data.CircleVertexBuffer->SetLayout({	
 			{ ShaderDataType::Float3, "a_WorldPosition" },
 			{ ShaderDataType::Float3, "a_LocalPosition" },
 			{ ShaderDataType::Float4, "a_Color"         },

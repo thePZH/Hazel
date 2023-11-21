@@ -82,7 +82,7 @@ namespace Hazel {
 		Ref<VertexBuffer> TextVertexBuffer;
 		Ref<Shader> TextShader;
 
-		uint32_t QuadIndexCount = 0;	// 当前index数量
+		uint32_t QuadIndexCount = 0;	// 记录当前索引缓冲中有多少需要绘制，每次drawQuad()都要+6
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
@@ -158,7 +158,7 @@ namespace Hazel {
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		// Circles 不同于quad需要4个顶点结构体组成一个quad，这里一个顶点结构体就代表一个圆
+		// Circles 圆也需要4个顶点结构体组成，主要是需要在shader中使用UV坐标，即4个顶点的locationPostion
 		s_Data.CircleVertexArray = VertexArray::Create();
 
 		s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex));
@@ -171,7 +171,7 @@ namespace Hazel {
 			{ ShaderDataType::Int,    "a_EntityID"      }
 		});
 		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
-		s_Data.CircleVertexArray->SetIndexBuffer(quadIB); // Use quad IB
+		s_Data.CircleVertexArray->SetIndexBuffer(quadIB); // Reuse quadIB
 		s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVertices];
 
 		// Lines
@@ -290,6 +290,7 @@ namespace Hazel {
 	{
 		if (s_Data.QuadIndexCount)
 		{
+			// 明确表示计算字节偏移量，转uint32_t仅仅是因为等会SetData形参是这个类型而已
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
@@ -486,14 +487,14 @@ namespace Hazel {
 	{
 		HZ_PROFILE_FUNCTION();
 
-		// TODO: implement for circles
+		// TODO: implement for circles 目前只有一个Flush()和nextBatch()这会刷新所有类型(quad, circle, line)的顶点缓存
 		// if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
 		// 	NextBatch();
 
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i];
-			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f;
+			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f;	// 作为UV坐标左下(-1,-1) 右上(1,1) 为了跟shadertoy相同
 			s_Data.CircleVertexBufferPtr->Color = color;
 			s_Data.CircleVertexBufferPtr->Thickness = thickness;
 			s_Data.CircleVertexBufferPtr->Fade = fade;
@@ -501,9 +502,9 @@ namespace Hazel {
 			s_Data.CircleVertexBufferPtr++;
 		}
 
-		s_Data.CircleIndexCount += 6;
+		s_Data.CircleIndexCount += 6;	// +6 因为circleShader中，需要UV坐标，而实现方式是通过quad的四个顶点的localPosition
 
-		s_Data.Stats.QuadCount++;
+		s_Data.Stats.QuadCount++;		// 虽然是circle，但是实际上也是按4个点来渲染的，没毛病
 	}
 
 	void Renderer2D::DrawLine(const glm::vec3& p0, glm::vec3& p1, const glm::vec4& color, int entityID)

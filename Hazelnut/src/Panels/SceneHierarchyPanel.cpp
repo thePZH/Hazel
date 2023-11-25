@@ -258,7 +258,7 @@ namespace Hazel {
 			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
 			DisplayAddComponentEntry<TextComponent>("Text Component");
-
+			
 			ImGui::EndPopup();
 		}
 

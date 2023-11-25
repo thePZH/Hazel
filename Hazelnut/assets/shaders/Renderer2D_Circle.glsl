@@ -7,7 +7,7 @@
 #version 450 core
 
 layout(location = 0) in vec3 a_WorldPosition;
-layout(location = 1) in vec3 a_LocalPosition;
+layout(location = 1) in vec3 a_LocalPosition;	// 作为uv使用，妙蛙
 layout(location = 2) in vec4 a_Color;
 layout(location = 3) in float a_Thickness;
 layout(location = 4) in float a_Fade;
@@ -65,7 +65,7 @@ void main()
     float circle = smoothstep(0.0, Input.Fade, distance);
     circle *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
 
-	if (circle == 0.0)
+	if (circle == 0.0)	// 不属于circle的区域丢掉 不做任何处理，主要是别影响到o_EntityID纹理上的内容
 		discard;
 
     // Set output color

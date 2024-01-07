@@ -141,7 +141,7 @@ namespace Hazel {
 	class ScriptEngine
 	{
 	public:
-		static void Init();
+		static void Init();		// call from EditorLayer::OpenProject()
 		static void Shutdown();
 
 		static bool LoadAssembly(const std::filesystem::path& filepath);
@@ -205,7 +205,7 @@ namespace Hazel {
 			return "None";
 		}
 
-		inline ScriptFieldType ScriptFieldTypeFromString(std::string_view fieldType)
+		inline ScriptFieldType ScriptFieldTypeFromString(std::string_view fieldType) 
 		{
 			if (fieldType == "None")    return ScriptFieldType::None;
 			if (fieldType == "Float")   return ScriptFieldType::Float;

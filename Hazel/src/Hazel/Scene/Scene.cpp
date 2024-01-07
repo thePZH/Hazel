@@ -119,6 +119,7 @@ namespace Hazel {
 		m_Registry.destroy(entity);
 	}
 
+	// 初始化物理世界、脚本系统
 	void Scene::OnRuntimeStart()
 	{
 		m_IsRunning = true;
@@ -162,7 +163,7 @@ namespace Hazel {
 	{
 		if (!m_IsPaused || m_StepFrames-- > 0)
 		{
-			// Update scripts
+			// Update scripts（runtime特有的，editor和simulate模式没有）
 			{
 				// C# Entity OnUpdate
 				auto view = m_Registry.view<ScriptComponent>();
@@ -211,7 +212,7 @@ namespace Hazel {
 		}
 
 		// Render 2D
-		Camera* mainCamera = nullptr;
+		Camera* mainCamera = nullptr;	// 找到primary camera entity
 		glm::mat4 cameraTransform;
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
@@ -272,6 +273,7 @@ namespace Hazel {
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& camera)
 	{
+		// 比编辑模式多了一个物理计算
 		if (!m_IsPaused || m_StepFrames-- > 0)
 		{
 			// Physics
@@ -469,7 +471,7 @@ namespace Hazel {
 				Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
 			}
 		}
-
+		 
 		Renderer2D::EndScene();
 	}
   
@@ -478,7 +480,7 @@ namespace Hazel {
 	{
 		static_assert(sizeof(T) == 0);
 	}
-
+	  
 	template<>
 	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
 	{

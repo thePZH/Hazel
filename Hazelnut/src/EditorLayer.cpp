@@ -94,6 +94,7 @@ namespace Hazel {
 		// Clear our entity ID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
+		// 渲染（根据sceneState更新相机，场景对象）
 		switch (m_SceneState)
 		{
 			case SceneState::Edit:
@@ -139,7 +140,7 @@ namespace Hazel {
 
 		m_Framebuffer->Unbind();
 	}
-
+	 
 	void EditorLayer::OnImGuiRender()
 	{
 		HZ_PROFILE_FUNCTION();
@@ -389,9 +390,9 @@ namespace Hazel {
 			if (ImGui::ImageButton((ImTextureID)(uint64_t)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor) && toolbarEnabled)
 			{
 				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
-					OnScenePlay();
+					OnScenePlay();	// 改state为play
 				else if (m_SceneState == SceneState::Play)
-					OnSceneStop();
+					OnSceneStop();	// 改为Edit
 			}
 		}
 

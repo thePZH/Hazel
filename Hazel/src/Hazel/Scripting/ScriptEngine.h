@@ -68,12 +68,13 @@ namespace Hazel {
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
+	// 代表C#脚本中定义的类
 	class ScriptClass
 	{
 	public:
 		ScriptClass() = default;
 		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
-
+		
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
@@ -90,6 +91,7 @@ namespace Hazel {
 		friend class ScriptEngine;
 	};
 
+	// 代表脚本中的类的实例
 	class ScriptInstance
 	{
 	public:
@@ -138,6 +140,7 @@ namespace Hazel {
 		friend struct ScriptFieldInstance;
 	};
 
+	// 这是C++调用C#函数的API
 	class ScriptEngine
 	{
 	public:

@@ -6,6 +6,7 @@
 
 namespace Hazel {
 
+	// 图形API的更上一层的接口
 	class RendererAPI
 	{
 	public:

@@ -101,7 +101,7 @@ namespace Hazel {
 				if (m_ViewportFocused)
 					m_CameraController.OnUpdate(ts);
 
-				m_EditorCamera.OnUpdate(ts);
+				m_EditorCamera.OnUpdate(ts);	// 更新相机就是做VP矩阵更新
 
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 				break;
@@ -382,7 +382,7 @@ namespace Hazel {
 		bool hasPlayButton = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
 		bool hasSimulateButton = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate;
 		bool hasPauseButton = m_SceneState != SceneState::Edit;
-
+		// 命名为hasPlayOrPauseButton比较好，因为这里
 		if (hasPlayButton)
 		{
 			Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_IconPlay : m_IconStop;

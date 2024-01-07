@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 
 namespace Hazel
 {
+	// 作为访问C++端ECS的接口，实际上不包含任何实际的组件数据（包括其子类）仅仅是一个ID，真正获取数据的时候，是通过提供ID => 调用internalcall=>从C++端获取数据
 	public abstract class Component
 	{
 		public Entity Entity { get; internal set; }
 	}
 
+	// 所有派生的组件类型，都可拥有Entity的访问权限
 	public class TransformComponent : Component
 	{
 		public Vector3 Translation

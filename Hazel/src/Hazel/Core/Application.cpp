@@ -21,10 +21,11 @@ namespace Hazel {
 		HZ_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		// Set working directory here
+		// 如果specification里面指定了工作目录，则设为当前工作目录，我们项目中使用std::filesystem来管理路径
 		if (!m_Specification.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Specification.WorkingDirectory);
-
+		
+		// 初始化glfw窗口，渲染API
 		m_Window = Window::Create(WindowProps(m_Specification.Name));
 		m_Window->SetEventCallback(HZ_BIND_EVENT_FN(Application::OnEvent));
 
@@ -114,7 +115,7 @@ namespace Hazel {
 					HZ_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
 					for (Layer* layer : m_LayerStack)
-						layer->OnImGuiRender();
+						layer->OnImGuiRender();	// 虚函数哈
 				}
 				m_ImGuiLayer->End();
 			}

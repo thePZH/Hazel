@@ -62,9 +62,11 @@ namespace Hazel {
 			++s_GLFWWindowCount;
 		}
 
+		// 设置窗口的上下文，目前只有OpenGL，因此是设置为OpenGLContext，并初始化Opengl（加载函数指针）
 		m_Context = GraphicsContext::Create(m_Window);
 		m_Context->Init();
 
+		// userPointer是给glfw传一个指针，指向任意我们想存放的数据，之后通过get获取
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 

@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 
 namespace Hazel {
-	// 所有相机只需要维护自己的view矩阵
+	// 所有相机子类只需要维护自己的view矩阵（因为每个相机位置、朝向不同）
 	class EditorCamera : public Camera
 	{
 	public:
@@ -35,6 +35,7 @@ namespace Hazel {
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
 	private:
+		// 相机类的核心就是这俩，所有的操作最终都是更新View 或 Projection矩阵的
 		void UpdateProjection();
 		void UpdateView();
 

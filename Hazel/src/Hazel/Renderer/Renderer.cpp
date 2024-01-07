@@ -10,8 +10,8 @@ namespace Hazel {
 	{
 		HZ_PROFILE_FUNCTION();
 
-		RenderCommand::Init();
-		Renderer2D::Init();
+		RenderCommand::Init();	// 顺带初始化一写RendererAPI的东西（这里是Opengl的特性启用）
+		Renderer2D::Init();		// 2D渲染器需要的东西比如 batch Rendering 所需要的大块连续的顶点缓存、shaders编译、纹理加载等
 	}
 
 	void Renderer::Shutdown()

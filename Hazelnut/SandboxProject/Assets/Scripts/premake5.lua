@@ -1,3 +1,4 @@
+-- 这个lua文件搞了个新的.sln，每次要手动编译。。。目前
 local HazelRootDir = '../../../..'
 include (HazelRootDir .. "/vendor/premake/premake_customization/solution_items.lua")
 

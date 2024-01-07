@@ -130,8 +130,9 @@ namespace Hazel {
 			ScriptEngine::OnRuntimeStart(this);
 			// Instantiate all script entities
 
+			// 遍历所有有脚本组件的Entity，让脚本引擎模块根据entity的信息来执行操作，比如调用OnCreate()函数
 			auto view = m_Registry.view<ScriptComponent>();
-			for (auto e : view)
+			for (auto e : view)	
 			{
 				Entity entity = { e, this };
 				ScriptEngine::OnCreateEntity(entity);

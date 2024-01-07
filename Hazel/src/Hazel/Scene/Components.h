@@ -133,7 +133,7 @@ namespace Hazel {
 		// TODO(Yan): move into physics material in the future maybe
 		float Density = 1.0f;
 		float Friction = 0.5f;
-		float Restitution = 0.0f;			// 弹力
+		float Restitution = 0.0f;			// 恢复系数（弹力）
 		float RestitutionThreshold = 0.5f;
 
 		// Storage for runtime

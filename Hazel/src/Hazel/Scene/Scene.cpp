@@ -416,7 +416,7 @@ namespace Hazel {
 
 				b2CircleShape circleShape;
 				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
+				circleShape.m_radius = transform.Scale.x * cc2d.Radius;	// 这样就可以让碰撞体随transform组件缩放，并且也可以通过属性面板的radius控制大小
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &circleShape;

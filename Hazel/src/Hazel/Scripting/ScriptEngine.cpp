@@ -79,19 +79,25 @@ namespace Hazel {
 			return assembly;
 		}
 
+		/*
+			在.NET平台上，源代码被编译成IL代码而不是直接编译成本地机器码。这种中间语言的使用具有多个好处：
+			平台独立、运行时编译（JIT）、不同语言融合（各种语言编译成一致的IL代码）、安全性（元数据包含类型信息）
+		*/
+
 		void PrintAssemblyTypes(MonoAssembly* assembly)
 		{
-			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+			MonoImage* image = mono_assembly_get_image(assembly);	// MonoImage是表示程序集中的IL代码和元数据的结构。
+			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);	// 获取类型定义表的信息。类型定义表包含有关程序集中所有类型的信息。
+			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);	// 获取类型定义表中的行数，即类型的数量。
 
 			for (int32_t i = 0; i < numTypes; i++)
 			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
+				uint32_t cols[MONO_TYPEDEF_SIZE];	// 解码类型定义表中的一行，将每一列的结果存储在cols数组中
 				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+				// 获取类型的命名空间和类型名。mono_metadata_string_heap用于处理包含字符串的列，使你能够获得字符串的实际内容。
+				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);	
+				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);		
 				HZ_CORE_TRACE("{}.{}", nameSpace, name);
 			}
 		}
@@ -424,13 +430,11 @@ namespace Hazel {
 			Ref<ScriptClass> scriptClass = CreateRef<ScriptClass>(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
-
-			// This routine is an iterator routine for retrieving the fields in a class.
-			// You must pass a gpointer that points to zero and is treated as an opaque handle
-			// to iterate over all of the elements. When no more values are available, the return value is NULL.
-
+			// 获取appAssembly中的类的字段
 			int fieldCount = mono_class_num_fields(monoClass);
 			HZ_CORE_WARN("{} has {} fields:", className, fieldCount);
+
+			// 遍历每个field
 			void* iterator = nullptr;
 			while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator))
 			{
@@ -466,6 +470,8 @@ namespace Hazel {
 		return s_Data->EntityInstances.at(uuid)->GetManagedObject();
 	}
 
+
+	// 实例化C#类，并调用默认构造函数
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
 		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);

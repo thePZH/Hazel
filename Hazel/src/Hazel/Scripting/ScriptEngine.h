@@ -33,7 +33,7 @@ namespace Hazel {
 		ScriptFieldType Type;
 		std::string Name;
 		
-		MonoClassField* ClassField;
+		MonoClassField* ClassField;	
 	};
 
 	// ScriptField + data storage

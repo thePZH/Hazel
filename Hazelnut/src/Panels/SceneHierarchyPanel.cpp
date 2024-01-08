@@ -333,6 +333,7 @@ namespace Hazel {
 			}
 		});
 
+		// 这里捕获了entity对象，内部又调用了entity.GetUUID()这个非const方法，因此必须给lambda表达式加一个mutable
 		DrawComponent<ScriptComponent>("Script", entity, [entity, scene = m_Context](auto& component) mutable
 		{
 			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);

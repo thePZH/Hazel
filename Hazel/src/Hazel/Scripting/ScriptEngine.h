@@ -84,7 +84,7 @@ namespace Hazel {
 		std::string m_ClassNamespace;
 		std::string m_ClassName;
 
-		std::map<std::string, ScriptField> m_Fields;
+		std::map<std::string, ScriptField> m_Fields;	// 非实际的存储数据，相当于字段的定义
 
 		MonoClass* m_MonoClass = nullptr;
 
@@ -127,7 +127,7 @@ namespace Hazel {
 		bool GetFieldValueInternal(const std::string& name, void* buffer);
 		bool SetFieldValueInternal(const std::string& name, const void* value);
 	private:
-		Ref<ScriptClass> m_ScriptClass;
+		Ref<ScriptClass> m_ScriptC	lass;
 
 		MonoObject* m_Instance = nullptr;
 		MonoMethod* m_Constructor = nullptr;

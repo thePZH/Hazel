@@ -11,10 +11,12 @@ namespace Hazel {
 
 	void Log::Init()
 	{
+		// 创建两个日志输出渠道，一个是控制台彩色输出，另一个是写入到文件
 		std::vector<spdlog::sink_ptr> logSinks;
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Hazel.log", true));
-
+		
+		// 设置日志输出格式
 		logSinks[0]->set_pattern("%^[%T] %n: %v%$");
 		logSinks[1]->set_pattern("[%T] [%l] %n: %v");
 

@@ -16,6 +16,7 @@ namespace Hazel {
 	{
 		HZ_PROFILE_FUNCTION();
 
+		// 这是把m_WindowHandle的当前上下文设置为OpenGL
 		glfwMakeContextCurrent(m_WindowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		HZ_CORE_ASSERT(status, "Failed to initialize Glad!");

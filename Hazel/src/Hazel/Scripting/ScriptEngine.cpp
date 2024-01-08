@@ -123,6 +123,7 @@ namespace Hazel {
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
 
+		// core是C#端的API，app是用这些API写的C#脚本，字面意思
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
 
@@ -134,8 +135,8 @@ namespace Hazel {
 
 		ScriptClass EntityClass;
 
-		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
-		std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
+		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;	// 存放的是C#脚本里Entity类的子类
+		std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;		// UUID对应Entity, scripintance对应C#类的实例化对象，可以调用对象的方法、获取设置属性等
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 
 		Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
@@ -174,6 +175,7 @@ namespace Hazel {
 		InitMono();
 		ScriptGlue::RegisterFunctions();
 
+		// 核心脚本库的DLL
 		bool status = LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
 		if (!status)
 		{
@@ -181,6 +183,7 @@ namespace Hazel {
 			return;
 		}
 		
+		// 自己写的C#脚本
 		auto scriptModulePath = Project::GetAssetDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 		status = LoadAppAssembly(scriptModulePath);
 		if (!status)
@@ -188,7 +191,7 @@ namespace Hazel {
 			HZ_CORE_ERROR("[ScriptEngine] Could not load app assembly.");
 			return;
 		}
-
+		
 		LoadAssemblyClasses();
 
 		ScriptGlue::RegisterComponents();
@@ -205,29 +208,29 @@ namespace Hazel {
 
 	void ScriptEngine::InitMono()
 	{
-		mono_set_assemblies_path("mono/lib");
+		mono_set_assemblies_path("mono/lib"); // 设置Mono运行时引擎的程序集路径。这里假设Mono的程序集文件存放在"mono/lib"目录下。
 
 		if (s_Data->EnableDebugging)
 		{
-			const char* argv[2] = {
+			const char* argv[2] = {	// 指定了调试器代理的配置，包括使用Socket进行通信，监听在本地地址127.0.0.1的2550端口上，以及其他一些调试相关的配置。
 				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
 				"--soft-breakpoints"
 			};
 
-			mono_jit_parse_options(2, (char**)argv);
-			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+			mono_jit_parse_options(2, (char**)argv);	// 解析Mono运行时的参数选项，这里传递了两个参数。
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);	// 初始化Mono的调试器，使用MONO_DEBUG_FORMAT_MONO格式。
 		}
 
-		MonoDomain* rootDomain = mono_jit_init("HazelJITRuntime");
+		MonoDomain* rootDomain = mono_jit_init("HazelJITRuntime");	// 初始化Mono运行时，并创建一个名为"HazelJITRuntime"的根域。根域是整个Mono应用程序的顶级域。
 		HZ_CORE_ASSERT(rootDomain);
 
 		// Store the root domain pointer
 		s_Data->RootDomain = rootDomain;
 
 		if (s_Data->EnableDebugging)
-			mono_debug_domain_create(s_Data->RootDomain);
+			mono_debug_domain_create(s_Data->RootDomain);	// 创建一个新的调试域。调试域是为了支持在特定域中进行调试
 
-		mono_thread_set_main(mono_thread_current());
+		mono_thread_set_main(mono_thread_current());		// 设置当前线程为主线程，这是为了确保正确的Mono上下文关联到主线程
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -240,28 +243,37 @@ namespace Hazel {
 		mono_jit_cleanup(s_Data->RootDomain);
 		s_Data->RootDomain = nullptr;
 	}
-
+	// 程序集（Assembly）是最小的部署单元，它是包含在一个或多个文件中的一组已命名和版本化的代码资源和元数据。程序集可以包含以下内容：
+	// 1、IL Code (Intermediate Language Code)： 由 .NET 编译器生成的中间语言代码，也称为 IL Code 或 CIL (Common Intermediate Language)。
+	// 这是一种与平台无关的代码，需要在运行时通过 JIT 编译器转换为本地机器码。
+	// 2、元数据（Metadata）： 包含有关程序集的信息，例如类型信息、成员信息、版本号、依赖关系等。这些元数据使得程序集可以在运行时
+	// 被强大的 .NET 运行时环境（Common Language Runtime，CLR）管理。
+	// 3、资源文件： 例如图像、字符串、配置文件等，这些资源可以被程序集访问。
+	// 程序集可以分为两种主要类型：可执行程序集（Executable Assembly）和库程序集（Library Assembly）。
+	// -- 可执行程序集： 包含一个应用程序的入口点，可以被直接执行。通常是.exe 文件。
+	// -- 库程序集： 包含可供其他程序集引用的代码和资源。通常是.dll 文件。
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
-		// Create an App Domain
+		// Create an App Domain	(应用程序域是Mono中用于隔离和管理代码的单位)
 		s_Data->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
-		mono_domain_set(s_Data->AppDomain, true);
+		mono_domain_set(s_Data->AppDomain, true); // 这是为了确保后续加载的程序集在刚创建的域中运行。
 
 		s_Data->CoreAssemblyFilepath = filepath;
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->EnableDebugging);
+		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->EnableDebugging);	// 使用Mono运行时 API来加载程序集
 		if (s_Data->CoreAssembly == nullptr)
 			return false;
-
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+		
+		// 获取核心程序集的图像，即程序集的内存表示, 包含了程序集的元数据和IL代码。
+		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);	
 		return true;
 	}
-
+	
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		s_Data->AppAssemblyFilepath = filepath;
 		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->EnableDebugging);
 		if (s_Data->AppAssembly == nullptr)
-			return false;
+			return false; 
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
@@ -291,11 +303,13 @@ namespace Hazel {
 		s_Data->SceneContext = scene;
 	}
 
+	// 仅判断C#里面Entity的子类
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
 	{
 		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
 	}
 
+	// 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
 		const auto& sc = entity.GetComponent<ScriptComponent>();
@@ -303,9 +317,10 @@ namespace Hazel {
 		{
 			UUID entityID = entity.GetUUID();
 
+			// 根据ScriptClass对象创建ScriptIstance对象，其实就是实例化C#中的类，
 			Ref<ScriptInstance> instance = CreateRef<ScriptInstance>(s_Data->EntityClasses[sc.ClassName], entity);
 			s_Data->EntityInstances[entityID] = instance;
-
+			
 			// Copy field values
 			if (s_Data->EntityScriptFields.find(entityID) != s_Data->EntityScriptFields.end())
 			{
@@ -314,6 +329,7 @@ namespace Hazel {
 					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
 			}
 
+			// 调用C#类实例化对象的OnCreate()函数
 			instance->InvokeOnCreate();
 		}
 	}
@@ -379,15 +395,20 @@ namespace Hazel {
 	{
 		s_Data->EntityClasses.clear();
 
+		// 注意这里是获取AppAssembly中的metadata，core里面的基本不需要，仅用作判断
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		
+		// Mono API的使用，核心是MonoClass，这是C# class的代表。Hazel.Entity是C#代码中的我们定义的基类
 		MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Hazel", "Entity");
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
-			uint32_t cols[MONO_TYPEDEF_SIZE];
+			// 解码所有元数据
+			uint32_t cols[MONO_TYPEDEF_SIZE];	
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
+			// 这里也是APP中的C#脚本类型的名字
 			const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 			std::string fullName;
@@ -404,7 +425,8 @@ namespace Hazel {
 			bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
 			if (!isEntity)
 				continue;
-
+			
+			// 根据C#类，创建相应的C++ ScriptClass对象(与C#类一一对应的)
 			Ref<ScriptClass> scriptClass = CreateRef<ScriptClass>(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
@@ -479,6 +501,8 @@ namespace Hazel {
 		return mono_runtime_invoke(method, instance, params, &exception);
 	}
 
+	// 根据从C#那里获取到并创建的scriptClass(这是包装的MonoClass)，来创建其对应的C++端的实例对象（包装的MonoObject）
+	// 并且获取类中的方法，存放在实例类中
 	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
 	{

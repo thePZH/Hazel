@@ -4,6 +4,7 @@
 
 namespace Hazel {
 
+	// 维护相机必有的P矩阵
 	class Camera
 	{
 	public:

@@ -21,7 +21,7 @@ namespace Hazel {
 	private:
 		uint32_t m_RendererID;
 		uint32_t m_VertexBufferIndex = 0;
-		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
+		std::vector<Ref<VertexBuffer>> m_VertexBuffers;	// 不太懂，本程序内只要顶点缓冲区满了，就发出drawcall，之后再刷新缓冲区并重新记录，并不需要多个，可能是为了适配多种顶点布局的情况吧
 		Ref<IndexBuffer> m_IndexBuffer;
 	};
 

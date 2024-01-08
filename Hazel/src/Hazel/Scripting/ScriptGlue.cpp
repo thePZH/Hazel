@@ -46,7 +46,8 @@ namespace Hazel {
 	{
 		return ScriptEngine::GetManagedInstance(entityID);
 	}
-
+	
+	// MonoReflectionType: 从C#传入的类型
 	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -54,6 +55,7 @@ namespace Hazel {
 		Entity entity = scene->GetEntityByUUID(entityID);
 		HZ_CORE_ASSERT(entity);
 
+		// 这个指针指向的是Assembly中的该类型的内存地址
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		HZ_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end());
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
@@ -160,16 +162,19 @@ namespace Hazel {
 		return Input::IsKeyPressed(keycode);
 	}
 
+	// 展开。给每个C++组件类型都注册一遍，即放在map中，键为类型名，值为函数指针
 	template<typename... Component>
 	static void RegisterComponent()
 	{
 		([]()
 		{
+			// 把原本的作用域Hazel:: 变成C#兼容的Hazel.
 			std::string_view typeName = typeid(Component).name();
 			size_t pos = typeName.find_last_of(':');
 			std::string_view structName = typeName.substr(pos + 1);
-			std::string managedTypename = fmt::format("Hazel.{}", structName);
+			std::string managedTypename = fmt::format("Hazel.{}", structName);// C#中的类型的全称
 
+			// 根据字符串获取C# Assembly中的类型的指针，注意这个类型不同于C++中的组件类型，这个map "s_EntityHasComponentFuncs"也是对两者做的一个映射
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
@@ -180,12 +185,14 @@ namespace Hazel {
 		}(), ...);
 	}
 
+	// 做传递用
 	template<typename... Component>
 	static void RegisterComponent(ComponentGroup<Component...>)
 	{
 		RegisterComponent<Component...>();
 	}
 
+	// C++端所有组件都注册一下，即把组件跟相应的函数对应，注意内部实际上把作用域符号"::"换成了"."以适配C#端的类型名称
 	void ScriptGlue::RegisterComponents()
 	{
 		s_EntityHasComponentFuncs.clear();

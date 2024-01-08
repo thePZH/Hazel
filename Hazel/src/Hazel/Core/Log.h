@@ -27,6 +27,7 @@ namespace Hazel {
 
 }
 
+// 重载<<
 template<typename OStream, glm::length_t L, typename T, glm::qualifier Q>
 inline OStream& operator<<(OStream& os, const glm::vec<L, T, Q>& vector)
 {

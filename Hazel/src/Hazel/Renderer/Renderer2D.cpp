@@ -83,7 +83,7 @@ namespace Hazel {
 		Ref<Shader> TextShader;
 
 		uint32_t QuadIndexCount = 0;	// 记录当前索引缓冲中有多少需要绘制，每次drawQuad()都要+6
-		QuadVertex* QuadVertexBufferBase = nullptr;
+		QuadVertex* QuadVertexBufferBase = nullptr;	// 
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
 		uint32_t CircleIndexCount = 0;
@@ -124,7 +124,8 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
-		// 申请一块连续的大内存专门用于存放绘制Quad的顶点
+		
+		// 显存里申请一块区域，根据选用的api来创建对应的缓存，本程序中是Opengl所以是glCreateBuffer()
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局
 			{ ShaderDataType::Float3, "a_Position"     },
@@ -136,8 +137,8 @@ namespace Hazel {
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
+		// CPU端开辟缓存，存放实际的顶点和索引数据
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
-
 		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
 		uint32_t offset = 0;
@@ -153,7 +154,7 @@ namespace Hazel {
 
 			offset += 4;
 		}
-
+		// 在这里直接就进行了索引缓存的创建
 		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
@@ -200,6 +201,7 @@ namespace Hazel {
 		s_Data.TextVertexArray->SetIndexBuffer(quadIB);
 		s_Data.TextVertexBufferBase = new TextVertex[s_Data.MaxVertices];
 
+		// Texture
 		s_Data.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -208,6 +210,7 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
+		// Shaders
 		s_Data.QuadShader = Shader::Create("assets/shaders/Renderer2D_Quad.glsl");
 		s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
 		s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");
@@ -221,7 +224,8 @@ namespace Hazel {
 		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);	// 开辟一块显存（uniform buffer）
+		// Camera
+		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	}
 
 	void Renderer2D::Shutdown()

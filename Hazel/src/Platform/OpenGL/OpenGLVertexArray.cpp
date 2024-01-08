@@ -64,9 +64,9 @@ namespace Hazel {
 		vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
-		for (const auto& element : layout)	// 可以范围循环访问layout内部的vector成员，因为该类实现了迭代器begin() end()方法
+		for (const auto& element : layout)	// 范围遍历自定义结构BufferLayout，因为该类实现了迭代器begin() end()方法
 		{
-			switch (element.Type)	// 对我们的batch中的每个顶点的每个属性（即这里的element）进行属性设置
+			switch (element.Type)	// 对我们的batch中的每个顶点的每个属性（即这里的element）进行glVertexAttribPointer设置
 			{
 				case ShaderDataType::Float:
 				case ShaderDataType::Float2:

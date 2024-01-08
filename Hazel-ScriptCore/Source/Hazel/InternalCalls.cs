@@ -5,6 +5,7 @@ namespace Hazel
 {
 	public static class InternalCalls
 	{
+		// 这里的参数2 Type，在C++端就是 MonoReflectionType
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]

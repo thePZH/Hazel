@@ -20,3 +20,6 @@ Hazelnut/assets/cache
 scripts/__pycache__
 /Hazelnut/Resources/Scripts
 /Hazelnut/SandboxProject/Assets/Scripts/Binaries
+/.editorconfig
+/Hazel-ScriptCore/Hazel-ScriptCore.csproj.user
+/Hazel/vendor

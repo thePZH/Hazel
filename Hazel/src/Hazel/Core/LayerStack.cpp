@@ -12,6 +12,7 @@ namespace Hazel {
 		}
 	}
 
+	// 普通layer插入，栈里的最上层永远是OverLay
 	void LayerStack::PushLayer(Layer* layer)
 	{
 		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);

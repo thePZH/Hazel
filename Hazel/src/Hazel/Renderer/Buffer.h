@@ -79,7 +79,7 @@ namespace Hazel {
 		uint32_t GetStride() const { return m_Stride; }
 		const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
-		// 允许在类的实例上使用迭代器，遍历 m_Elements 这个私有成员变量中的元素
+		// 允许在本类BufferLayout的实例上使用迭代器，使用时，bufferLayout就相当于一个容器了，实际上返回的是m_Elements的迭代器
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
 		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
@@ -91,7 +91,7 @@ namespace Hazel {
 			m_Stride = 0;
 			for (auto& element : m_Elements)
 			{
-				element.Offset = offset;	// 顶点数组的0位置，到该属性的起始位置的偏移量
+				element.Offset = offset;	// 顶点属性0的起始位置，到该属性的起始位置的偏移量
 				offset += element.Size;		
 				m_Stride += element.Size;	// 步长为所有属性的size之和
 			}

@@ -67,12 +67,14 @@ namespace Hazel {
 		m_Context->Init();
 
 		// userPointer是给glfw传一个指针，指向任意我们想存放的数据，之后通过get获取
+		// void* 可以指向任意用户自定义的类型数据，这是一种解耦，如果数据发生改变，只需要修改这里即可
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
+			// 在事件处理函数中通过get来获取，并且强制转换成我们需要的数据
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
 			data.Height = height;
@@ -80,7 +82,7 @@ namespace Hazel {
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
 		});
-
+		
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

@@ -127,7 +127,7 @@ namespace Hazel {
 		
 		// 显存里申请一块区域，根据选用的api来创建对应的缓存，本程序中是Opengl所以是glCreateBuffer()
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
-		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局
+		s_Data.QuadVertexBuffer->SetLayout({	// 用一个个element组成一个临时layout传进去，layout描述的是一个顶点的布局，注意：没有调用glVertexAttribPointer()
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float2, "a_TexCoord"     },
@@ -135,7 +135,7 @@ namespace Hazel {
 			{ ShaderDataType::Float,  "a_TilingFactor" },
 			{ ShaderDataType::Int,    "a_EntityID"     }
 		});
-		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);// 真正绑定vbo并为每个属性调用glVertexAttribPointer()
 
 		// CPU端开辟缓存，存放实际的顶点和索引数据
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];

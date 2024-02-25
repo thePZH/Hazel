@@ -118,8 +118,6 @@ namespace Hazel {
 
 	glm::vec3 EditorCamera::GetUpDirection() const
 	{
-		// 当前朝向的四元数既可以表示朝向，也能表示物体在局部空间的朝向 到 世界空间的朝向的 旋转变换，
-		// 如果把这个旋转变换应用给局部空间的+y轴，就能得到世界空间的头顶方向，其他任何局部方向同理
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
@@ -130,6 +128,7 @@ namespace Hazel {
 
 	glm::vec3 EditorCamera::GetForwardDirection() const
 	{
+		// opengl中，局部空间前向是-z
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
 	}
 
@@ -140,7 +139,7 @@ namespace Hazel {
 
 	glm::quat EditorCamera::GetOrientation() const
 	{
-		// 欧拉角表示的朝向转化成四元数
+		// 欧拉角表示的旋转转化成四元数
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
 

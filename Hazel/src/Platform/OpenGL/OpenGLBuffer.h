@@ -19,7 +19,7 @@ namespace Hazel {
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID;	// opengl中的资源缓存只需要一个索引号
 		BufferLayout m_Layout;
 	};
 

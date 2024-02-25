@@ -373,6 +373,7 @@ namespace Hazel {
 		out << YAML::EndMap; // Entity
 	}
 
+	// 场景序列化，以entity为单位，输出每个entity的所有组件信息即可
 	void SceneSerializer::Serialize(const std::string& filepath)
 	{
 		YAML::Emitter out;

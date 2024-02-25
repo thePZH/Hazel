@@ -77,7 +77,7 @@ namespace Hazel {
 
 		glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 
-		int m_GizmoType = -1;
+		int m_GizmoType = -1;	// 平移、旋转、缩放
 
 		bool m_ShowPhysicsColliders = false;
 

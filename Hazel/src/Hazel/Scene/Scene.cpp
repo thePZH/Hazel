@@ -436,6 +436,7 @@ namespace Hazel {
 		m_PhysicsWorld = nullptr;
 	}
 
+	// 这都是渲染到编辑器相机中的，运行时，场景的渲染不是调用的这个接口，是scene::onUpdateRuntime()
 	void Scene::RenderScene(EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);

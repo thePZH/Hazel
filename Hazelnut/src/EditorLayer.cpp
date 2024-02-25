@@ -43,12 +43,12 @@ namespace Hazel {
 		m_ActiveScene = m_EditorScene;
 
 		auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
-		if (commandLineArgs.Count > 1)
+		if (commandLineArgs.Count > 1)	// 可以在命令行中指定需要打开的场景文件
 		{
 			auto projectFilePath = commandLineArgs[1];
 			OpenProject(projectFilePath);
 		}
-		else
+		else// 命令行中没有指定，那就弹出一个浏览窗口，让其选择
 		{
 			// TODO(Yan): prompt the user to select a directory
 			// NewProject();
@@ -69,6 +69,7 @@ namespace Hazel {
 		HZ_PROFILE_FUNCTION();
 	}
 
+	// 更新一些事件，这里并未渲染UI
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		HZ_PROFILE_FUNCTION();
@@ -148,13 +149,13 @@ namespace Hazel {
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen_persistant = true;
-		bool opt_fullscreen = opt_fullscreen_persistant;
+		bool opt_fullscreen = opt_fullscreen_persistant;	// DockSpace全屏模式
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)	// DockSpace设置为全屏模式。
+		if (opt_fullscreen)	
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->Pos);
@@ -262,7 +263,8 @@ namespace Hazel {
 
 
 		ImGui::End();
-
+		
+		// viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });	// 窗口内边距0
 		ImGui::Begin("Viewport");
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();		// 窗口内容区域的最小坐标（局部坐标，因此是(0,0))
@@ -278,7 +280,7 @@ namespace Hazel {
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
-		// 如果没有悬浮在viewport窗口上，则我们不想控制渲染层，需要在UI层就阻塞事件的继续传递
+		// 如果没有悬浮在viewport窗口上，则阻碍一切鼠标事件传被imguiLayer处理
 		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportHovered);
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -639,12 +641,14 @@ namespace Hazel {
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
 			OpenScene(startScenePath);
 			m_ContentBrowserPanel = CreateScope<ContentBrowserPanel>();
-			 
+			
 		}
 	}
 
+	
 	bool EditorLayer::OpenProject()
 	{
+		// 没有路径形参，则用对话框方式让用户选择一个
 		std::string filepath = FileDialogs::OpenFile("Hazel Project (*.hproj)\0*.hproj\0");
 		if (filepath.empty())
 			return false;
@@ -663,7 +667,7 @@ namespace Hazel {
 		m_ActiveScene = CreateRef<Scene>();
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		
-		m_EditorScenePath = std::filesystem::path();
+		m_EditorScenePath = std::filesystem::path();	// 空地址，表示尚未保存到任何位置
 	}
 
 	void EditorLayer::OpenScene()
@@ -701,7 +705,7 @@ namespace Hazel {
 		if (!m_EditorScenePath.empty())
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
 		else
-			SaveSceneAs();	// 没有关联的路径文件就让用户选择一个
+			SaveSceneAs();	// 没有关联的路径文件就让用户选择一个，然后再里面继续序列化
 	}
 
 	void EditorLayer::SaveSceneAs()
